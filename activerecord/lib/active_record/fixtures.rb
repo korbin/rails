@@ -688,7 +688,11 @@ module ActiveRecord
 
               # Cap primary key sequences to max(pk).
               if conn.respond_to?(:reset_pk_sequence!)
-                set.each { |fs| conn.reset_pk_sequence!(fs.table_name) }
+                set.each do |fs|
+                  primary_key_is_uuid = fs&.model_class&.columns_hash[fs&.model_class&.primary_key]&.type == :uuid
+
+                  conn.reset_pk_sequence!(fs.table_name) unless primary_key_is_uuid
+                end
               end
             end
           end
